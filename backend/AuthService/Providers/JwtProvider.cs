@@ -11,15 +11,20 @@ namespace AuthService.Providers;
 /// Provides implementation for generating authentication tokens
 /// </summary>
 [Export(typeof(IJwtProvider))]
-[Shared]
-[method: ImportingConstructor]
-public class JwtProvider(AppSettings appSettings) : IJwtProvider
+public class JwtProvider : IJwtProvider
 {
+    private readonly AppSettings _appSettings;
+
+    public JwtProvider(AppSettings appSettings)
+    {
+        _appSettings = appSettings;
+    }
+
     /// <inheritdoc />
     public string GenerateToken(Guid userId)
     {
-        var secretKey = appSettings.JwtSettings.Secret;
-        var expirationDays = appSettings.JwtSettings.ExpiryDays;
+        var secretKey = _appSettings.JwtSettings.Secret;
+        var expirationDays = _appSettings.JwtSettings.ExpiryDays;
 
         var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
         var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);

@@ -1,4 +1,4 @@
-﻿namespace AuthService.Entities;
+﻿namespace AuthService.Repositories.Entities;
 
 /// <summary>
 /// Enumerates user roles in the system
