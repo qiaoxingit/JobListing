@@ -1,4 +1,4 @@
-﻿namespace AuthService.Entities;
+﻿namespace AuthService.Repositories.Entities;
 
 /// <summary>
 /// Represents a user in the system

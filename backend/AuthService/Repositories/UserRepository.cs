@@ -1,4 +1,7 @@
-﻿using AuthService.Entities;
+﻿using AuthService.Repositories.Database;
+using AuthService.Repositories.Entities;
+using Microsoft.EntityFrameworkCore;
+using SharedLib.Extensions;
 using System.Composition;
 
 namespace AuthService.Repositories;
@@ -9,6 +12,13 @@ namespace AuthService.Repositories;
 [Export(typeof(UserRepository))]
 public class UserRepository
 {
+    private readonly DatabaseContext _dbContext;
+
+    public UserRepository(DatabaseContext dbContext)
+    {
+        _dbContext = dbContext;
+    }
+
     /// <summary>
     /// Retrieves a user by username and password
     /// </summary>
@@ -17,17 +27,22 @@ public class UserRepository
     /// <returns>
     /// A <see cref="User"/> if the credentials are valid; otherwise, <c>null</c>
     /// </returns>
-    public async ValueTask<User> GetUserAsync(string username, string password)
+    public async ValueTask<User?> GetUserAsync(string username, string password)
     {
-        return await Task.Run(() => new User
+        var users = await _dbContext.Users.FromSqlInterpolated
+        (
+            $@"
+            SELECT *
+            FROM USER
+            WHERE USERNAME = {username}"
+        )
+        .ToListAsync();
+
+        if (users.IsNullOrEmpty() || users.Count > 1)
         {
-            Id = Guid.NewGuid(),
-            FirstName = "John",
-            LastName = "Harbor",
-            Email = "jharbor@test.com",
-            Username = "jharbor",
-            Password = "123456",
-            Role = Role.Reviewer,
-        });
+            return null;
+        }
+
+        return users[0];
     }
 }

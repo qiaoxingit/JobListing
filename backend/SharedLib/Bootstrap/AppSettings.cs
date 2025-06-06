@@ -5,8 +5,6 @@ namespace SharedLib.Bootstrap;
 /// <summary>
 /// Represents application wide configuration settings
 /// </summary>
-[Export]
-[Shared]
 public class AppSettings
 {
     /// <summary>
@@ -18,6 +16,11 @@ public class AppSettings
     /// Gets or sets the JWT settings
     /// </summary>
     public required JwtSettings JwtSettings { get; set; }
+
+    /// <summary>
+    /// Gets or sets the database connection strings
+    /// </summary>
+    public required DBCongfigration DBCongfigration { get; set; }
 }
 
 /// <summary>
@@ -34,4 +37,20 @@ public class JwtSettings
     /// Gets or sets the number of days after which the token expires
     /// </summary>
     public int ExpiryDays { get; set; }
+}
+
+/// <summary>
+/// Represents the database connection strings used by the application
+/// </summary>
+public class DBCongfigration
+{
+    /// <summary>
+    /// Gets or sets the MySql database version
+    /// </summary>
+    public required string MySqlVersion { get; set; }
+
+    /// <summary>
+    /// Gets or sets the main database connection string
+    /// </summary>
+    public required string DefaultConnection { get; set; }
 }

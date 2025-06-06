@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using AuthService.Repositories.Database;
+using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SharedLib.Bootstrap;
 using System.Composition;
 using System.Composition.Hosting;
@@ -25,12 +27,20 @@ public static class Bootstrap
         var configuration = new ContainerConfiguration()
             .WithAssemblies(assemblies);
 
-        var mefContainer = configuration.CreateContainer();
+        ConfigureAppSettings(builder);
+        ConfigureDependencyInjection(builder, assemblies, configuration);
+        ConfigureDatabase(builder);
+    }
 
-        var appSettings = mefContainer.GetExport<AppSettings>();
+    private static void ConfigureAppSettings(WebApplicationBuilder builder)
+    {
         var appSettingsJson = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"));
-        JsonConvert.PopulateObject(appSettingsJson, appSettings);
+        var appSettings = JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
+        builder.Services.AddSingleton(typeof(AppSettings), appSettings!);
+    }
 
+    private static void ConfigureDependencyInjection(WebApplicationBuilder builder, List<Assembly> assemblies, ContainerConfiguration configuration)
+    {
         foreach (var assembly in assemblies)
         {
             var exportedTypes = assembly.GetTypes()
@@ -44,11 +54,26 @@ public static class Bootstrap
                 {
                     var contractType = export.ContractType ?? type;
 
-                    var instance = mefContainer.GetExport(contractType);
-
-                    builder.Services.AddSingleton(contractType, instance);
+                    builder.Services.AddSingleton(contractType, type);
                 }
             }
         }
+    }
+
+    private static void ConfigureDatabase(WebApplicationBuilder builder)
+    {
+        var serviceProvider = builder.Services.BuildServiceProvider();
+
+        var appSettings = serviceProvider.GetService<AppSettings>();
+
+        builder.Services.AddDbContext<DatabaseContext>
+        (
+            options =>
+                options.UseMySql
+                (
+                    appSettings!.DBCongfigration.DefaultConnection,
+                    new MySqlServerVersion(new Version(appSettings.DBCongfigration.MySqlVersion))
+                )
+        );
     }
 }

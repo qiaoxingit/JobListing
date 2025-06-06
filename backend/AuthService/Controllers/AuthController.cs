@@ -3,7 +3,6 @@ using AuthService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.Contracts.AuthService;
 using SharedLib.Extensions;
-using System.Composition;
 
 namespace AuthService.Controllers;
 
@@ -12,7 +11,6 @@ namespace AuthService.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-[method: ImportingConstructor]
 public class AuthController(UserRepository userRepository, IJwtProvider jwtProvider) : ControllerBase
 {
     /// <summary>
