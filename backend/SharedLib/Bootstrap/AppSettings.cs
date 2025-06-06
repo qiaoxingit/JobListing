@@ -18,6 +18,11 @@ public class AppSettings
     public required JwtSettings JwtSettings { get; set; }
 
     /// <summary>
+    /// Gets or sets the fixed salt for encryption
+    /// </summary>
+    public required string FixedSalt { get; set; }
+
+    /// <summary>
     /// Gets or sets the database connection strings
     /// </summary>
     public required DBCongfigration DBCongfigration { get; set; }

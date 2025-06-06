@@ -1,4 +1,5 @@
-﻿using AuthService.Repositories.Database;
+﻿using AuthService.Providers;
+using AuthService.Repositories.Database;
 using AuthService.Repositories.Entities;
 using Microsoft.EntityFrameworkCore;
 using SharedLib.Extensions;
@@ -10,15 +11,8 @@ namespace AuthService.Repositories;
 /// Provides data access functionality related to users
 /// </summary>
 [Export(typeof(UserRepository))]
-public class UserRepository
+public class UserRepository(DatabaseContext dbContext, IEncryptProvider encryptProvider)
 {
-    private readonly DatabaseContext _dbContext;
-
-    public UserRepository(DatabaseContext dbContext)
-    {
-        _dbContext = dbContext;
-    }
-
     /// <summary>
     /// Retrieves a user by username and password
     /// </summary>
@@ -29,12 +23,14 @@ public class UserRepository
     /// </returns>
     public async ValueTask<User?> GetUserAsync(string username, string password)
     {
-        var users = await _dbContext.Users.FromSqlInterpolated
+        var encryptedPassword = encryptProvider.Encrypt(password);
+        var users = await dbContext.Users.FromSqlInterpolated
         (
             $@"
             SELECT *
             FROM USER
-            WHERE USERNAME = {username}"
+            WHERE USERNAME = {username}
+              AND PASSWORD = {encryptedPassword}"
         )
         .ToListAsync();
 
