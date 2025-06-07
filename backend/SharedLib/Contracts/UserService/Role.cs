@@ -1,4 +1,4 @@
-﻿namespace AuthService.Repositories.Entities;
+﻿namespace SharedLib.Contracts.UserService;
 
 /// <summary>
 /// Enumerates user roles in the system

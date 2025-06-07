@@ -1,10 +1,12 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using SharedLib.Bootstrap;
 using System.Composition;
 using System.Composition.Hosting;
 using System.Reflection;
+using UserService.Repository.Database;
 
-namespace AuthService;
+namespace UserService;
 
 /// <summary>
 /// Handles dependency injection setup and manual AppSettings binding
@@ -15,7 +17,7 @@ public static class Bootstrap
     /// Configures dependency injection and manual AppSettings binding
     /// </summary>
     /// <param name="builder">The web application builder</param>
-    public static void Configure(WebApplicationBuilder builder)
+    public static void Configure(WebApplicationBuilder builder, AppSettings? appSettings = null)
     {
         var assemblies = AppDomain.CurrentDomain
             .GetAssemblies()
@@ -25,14 +27,15 @@ public static class Bootstrap
         var configuration = new ContainerConfiguration()
             .WithAssemblies(assemblies);
 
-        ConfigureAppSettings(builder);
+        ConfigureAppSettings(builder, appSettings);
         ConfigureDependencyInjection(builder, assemblies, configuration);
+        ConfigureDatabase(builder);
     }
 
-    private static void ConfigureAppSettings(WebApplicationBuilder builder)
+    private static void ConfigureAppSettings(WebApplicationBuilder builder, AppSettings? appSettings)
     {
         var appSettingsJson = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"));
-        var appSettings = JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
+        appSettings ??= JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
         builder.Services.AddSingleton(typeof(AppSettings), appSettings!);
     }
 
@@ -51,9 +54,33 @@ public static class Bootstrap
                 {
                     var contractType = export.ContractType ?? type;
 
-                    builder.Services.AddSingleton(contractType, type);
+                    if (typeof(DatabaseContext).IsAssignableFrom(type) || contractType.Name.Contains("Repository"))
+                    {
+                        builder.Services.AddScoped(contractType, type);
+                    }
+                    else
+                    {
+                        builder.Services.AddSingleton(contractType, type);
+                    }
                 }
             }
         }
+    }
+
+    private static void ConfigureDatabase(WebApplicationBuilder builder)
+    {
+        var serviceProvider = builder.Services.BuildServiceProvider();
+
+        var appSettings = serviceProvider.GetService<AppSettings>();
+
+        builder.Services.AddDbContext<DatabaseContext>
+        (
+            options =>
+                options.UseMySql
+                (
+                    appSettings!.DBCongfigration.DefaultConnection,
+                    new MySqlServerVersion(new Version(appSettings.DBCongfigration.MySqlVersion))
+                )
+        );
     }
 }

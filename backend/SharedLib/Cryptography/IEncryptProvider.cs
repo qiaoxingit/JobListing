@@ -1,4 +1,4 @@
-﻿namespace AuthService.Providers;
+﻿namespace SharedLib.Cryptography;
 
 /// <summary>
 /// Provides functionalities to encrypt the string

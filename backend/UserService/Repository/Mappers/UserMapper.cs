@@ -1,8 +1,8 @@
-﻿using AuthService.Repositories.Entities;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SharedLib.Contracts.UserService;
 
-namespace AuthService.Repositories.Mappers;
+namespace UserService.Repository.Mappers;
 
 /// <summary>
 /// Configures the User entity mapping to the USER table
