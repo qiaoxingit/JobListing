@@ -1,9 +1,10 @@
 ﻿using SharedLib.Bootstrap;
+using System;
 using System.Composition;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace AuthService.Providers;
+namespace SharedLib.Cryptography;
 
 /// <summary>
 /// Provides functionalities to encrypt the string

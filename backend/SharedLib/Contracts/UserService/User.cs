@@ -1,4 +1,6 @@
-﻿namespace AuthService.Repositories.Entities;
+﻿using System;
+
+namespace SharedLib.Contracts.UserService;
 
 /// <summary>
 /// Represents a user in the system
@@ -26,14 +28,14 @@ public class User
     public required string Email { get; set; }
 
     /// <summary>
-    /// Gets or sets the username used for login
+    /// Gets or sets the username
     /// </summary>
     public required string Username { get; set; }
 
     /// <summary>
-    /// Gets or sets the password used for login
+    /// Gets or sets the password
     /// </summary>
-    public required string Password { get; set; }
+    public string? Password { get; set; }
 
     /// <summary>
     /// Gets or sets the role assigned to the user
