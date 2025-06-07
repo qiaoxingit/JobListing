@@ -1,8 +1,9 @@
 ﻿using AuthService.Providers;
-using AuthService.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.Contracts.AuthService;
+using SharedLib.Contracts.UserService;
 using SharedLib.Extensions;
+using SharedLib.Http;
 
 namespace AuthService.Controllers;
 
@@ -11,22 +12,39 @@ namespace AuthService.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class AuthController(UserRepository userRepository, IJwtProvider jwtProvider) : ControllerBase
+public class AuthController(IJwtProvider jwtProvider, IHttpClientFactory httpClientFactory) : ControllerBase
 {
     /// <summary>
     /// Authenticates a user with the username and password
     /// </summary>
     /// <param name="authenticationRequest">The request containing the username and password</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
     /// <returns><see cref="AuthenticationResponse"/> indicating if authentication was successful</returns>
     [HttpPost("Authenticate")]
-    public async ValueTask<IActionResult> AuthenticateAsync([FromBody] AuthenticationRequest authenticationRequest)
+    public async ValueTask<IActionResult> AuthenticateAsync([FromBody] AuthenticationRequest authenticationRequest, [FromRoute] CancellationToken token)
     {
         if (authenticationRequest is null || authenticationRequest.Username.IsNullOrEmpty() || authenticationRequest.Password.IsNullOrEmpty())
         {
             return BadRequest("No username or password specified!");
         }
 
-        var user = await userRepository.GetUserAsync(authenticationRequest.Username, authenticationRequest.Password);
+        var userApi = httpClientFactory.CreateClient(nameof(ServiceName.UserService));
+        var user = await userApi.PostAsJsonAsync("user/GetUser", authenticationRequest, token)
+            .ContinueWith
+            (
+                async postTask =>
+                {
+                    var response = await postTask;
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return await response.Content.ReadFromJsonAsync<User?>();
+                    }
+
+                    return null;
+                }
+            )
+            .Unwrap();
 
         if (user is null)
         {
