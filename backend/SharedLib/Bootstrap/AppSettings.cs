@@ -1,4 +1,4 @@
-﻿using System.Composition;
+﻿using System.Collections.Generic;
 
 namespace SharedLib.Bootstrap;
 
@@ -26,6 +26,11 @@ public class AppSettings
     /// Gets or sets the database connection strings
     /// </summary>
     public required DBCongfigration DBCongfigration { get; set; }
+
+    /// <summary>
+    /// Gets or sets the list of HttpClients
+    /// </summary>
+    public IReadOnlyList<HttpClientConfig>? HttpClients { get; set; }
 }
 
 /// <summary>
@@ -58,4 +63,20 @@ public class DBCongfigration
     /// Gets or sets the main database connection string
     /// </summary>
     public required string DefaultConnection { get; set; }
+}
+
+/// <summary>
+/// Represents an HttpClient's configurations
+/// </summary>
+public class HttpClientConfig
+{
+    /// <summary>
+    /// Gets or sets the name of the configuration
+    /// </summary>
+    public required string Name { get; set; }
+
+    /// <summary>
+    /// Gets or sets the base URL of each service
+    /// </summary>
+    public required string ServiceBaseUrl { get; set; }
 }

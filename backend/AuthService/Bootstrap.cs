@@ -27,6 +27,7 @@ public static class Bootstrap
 
         ConfigureAppSettings(builder);
         ConfigureDependencyInjection(builder, assemblies, configuration);
+        ConfigureHttpClients(builder);
     }
 
     private static void ConfigureAppSettings(WebApplicationBuilder builder)
@@ -54,6 +55,30 @@ public static class Bootstrap
                     builder.Services.AddSingleton(contractType, type);
                 }
             }
+        }
+    }
+
+    private static void ConfigureHttpClients(WebApplicationBuilder builder)
+    {
+        var serviceProvider = builder.Services.BuildServiceProvider();
+
+        var appSettings = serviceProvider.GetService<AppSettings>();
+
+        if (appSettings?.HttpClients is null || !appSettings.HttpClients.Any())
+        {
+            return;
+        }
+
+        foreach (var httpClientConfig in appSettings.HttpClients)
+        {
+            builder.Services.AddHttpClient
+            (
+                httpClientConfig.Name,
+                config =>
+                {
+                    config.BaseAddress = new Uri($"{httpClientConfig.ServiceBaseUrl}");
+                }
+            );
         }
     }
 }

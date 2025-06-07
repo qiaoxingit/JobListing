@@ -7,6 +7,15 @@ services:
       - "8080"
     networks:
       - backend-network
+  
+  userservice:
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+    expose:
+      - "8080"
+    networks:
+      - backend-network
 
   nginx:
     image: nginx:1.28.0
