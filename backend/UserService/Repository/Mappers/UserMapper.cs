@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using SharedLib.Contracts.UserService;
+using SharedLib.Database;
 
 namespace UserService.Repository.Mappers;
 
@@ -18,6 +19,7 @@ public class UserMapper : IEntityTypeConfiguration<User>
         builder.Property(u => u.Id)
                .HasColumnName("ID")
                .HasColumnType("binary(16)")
+               .HasConversion(new MySqlGuidConverter())
                .IsRequired();
 
         builder.Property(u => u.FirstName)
