@@ -27,9 +27,23 @@ public static class Bootstrap
         var configuration = new ContainerConfiguration()
             .WithAssemblies(assemblies);
 
+        ConfigureCors(builder);
         ConfigureAppSettings(builder, appSettings);
         ConfigureDependencyInjection(builder, assemblies, configuration);
         ConfigureDatabase(builder);
+    }
+
+    private static void ConfigureCors(WebApplicationBuilder builder)
+    {
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowAll", policy =>
+            {
+                policy.AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
+        });
     }
 
     private static void ConfigureAppSettings(WebApplicationBuilder builder, AppSettings? appSettings)
