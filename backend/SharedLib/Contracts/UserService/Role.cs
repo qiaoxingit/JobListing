@@ -6,9 +6,9 @@
 public enum Role
 {
     /// <summary>
-    /// A user who can review the job list
+    /// A user who can view the job list
     /// </summary>
-    Reviewer = 0,
+    Viewer = 0,
 
     /// <summary>
     /// A user who can post the job
