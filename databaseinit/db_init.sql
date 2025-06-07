@@ -9,11 +9,11 @@ CREATE TABLE USER (
 );
 
 INSERT INTO USER (ID, EMAIL, FIRST_NAME, LAST_NAME, USERNAME, PASSWORD, ROLE) VALUES
-    (UNHEX(REPLACE('550e8400-e29b-41d4-a716-446655440000', '-', '')), 'john.doe@example.com', 'John', 'Doe', 'johndoe', '1dmQjwKwx1B/qZQnLDPNhBceKsW1Wqa4w5uvM5rdCdM=', 0), --123
-    (UNHEX(REPLACE('5b73bebe-eb4a-428f-8f21-94ce51e07b6e', '-', '')), 'jane.smith@example.com', 'Jane', 'Smith', 'janesmith', '0gz/IkuVCail6EuVuIsyQN+XFQmcT8H7pBbFYHXi3PE=', 0), --aab
-    (UNHEX(REPLACE('62d168e8-d023-429c-885d-e1841e374140', '-', '')), 'admin@example.com', 'Admin', 'User', 'adminuser', 'tbEV/6XvTcYymxwJaHOfmoL9gnwG0CUc/xlNJa/046M=', 1), -- 789
-    (UNHEX(REPLACE('9f042e5d-c566-48a5-935d-275dedad2bfc', '-', '')), 'emily.jones@example.com', 'Emily', 'Jones', 'emilyj', 'u9Iqd4rG0zw8WbByptLiGMz1HUcEoiEt/AmCia4qWgs=', 1), --def
-    (UNHEX(REPLACE('93e27c43-db96-4e1f-8ccd-329e6340e939', '-', '')), 'michael.brown@example.com', 'Michael', 'Brown', 'mikeb', 'QFlTjJYHRoLsAEUo9wBpQfgj+MFhy9VIBvJ7eHmsoTo=', 0); --lmn
+    (UNHEX(REPLACE('550e8400-e29b-41d4-a716-446655440000', '-', '')), 'john.doe@example.com', 'John', 'Doe', 'johndoe', '1dmQjwKwx1B/qZQnLDPNhBceKsW1Wqa4w5uvM5rdCdM=', 0), #123
+    (UNHEX(REPLACE('5b73bebe-eb4a-428f-8f21-94ce51e07b6e', '-', '')), 'jane.smith@example.com', 'Jane', 'Smith', 'janesmith', '0gz/IkuVCail6EuVuIsyQN+XFQmcT8H7pBbFYHXi3PE=', 0), #aab
+    (UNHEX(REPLACE('62d168e8-d023-429c-885d-e1841e374140', '-', '')), 'admin@example.com', 'Admin', 'User', 'adminuser', 'tbEV/6XvTcYymxwJaHOfmoL9gnwG0CUc/xlNJa/046M=', 1), #789
+    (UNHEX(REPLACE('9f042e5d-c566-48a5-935d-275dedad2bfc', '-', '')), 'emily.jones@example.com', 'Emily', 'Jones', 'emilyj', 'u9Iqd4rG0zw8WbByptLiGMz1HUcEoiEt/AmCia4qWgs=', 1), #def
+    (UNHEX(REPLACE('93e27c43-db96-4e1f-8ccd-329e6340e939', '-', '')), 'michael.brown@example.com', 'Michael', 'Brown', 'mikeb', 'QFlTjJYHRoLsAEUo9wBpQfgj+MFhy9VIBvJ7eHmsoTo=', 0); #lmn
 
 CREATE TABLE JOB (
     ID BINARY(16) PRIMARY KEY,
