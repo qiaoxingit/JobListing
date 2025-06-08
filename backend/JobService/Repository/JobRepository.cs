@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using SharedLib.Contracts.JobService;
 using SharedLib.Database;
 using SharedLib.Extensions;
+using SharedLib.Pagination;
 using System.Composition;
 
 namespace JobService.Repository;
@@ -52,11 +53,22 @@ public class JobRepository(DatabaseContext dbContext)
     /// <param name="take">the number of jobs to return from the result</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
     /// <returns>A list of jobs that the user has interest</returns>
-    public async ValueTask<IReadOnlyList<Job>> GetUserInteredJobsAsync(Guid userId, int skip, int take, CancellationToken token)
+    public async ValueTask<PagedResult<Job>> GetUserInteredJobsAsync(Guid userId, int skip, int take, CancellationToken token)
     {
         var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
 
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(userId);
+
+        var totalCount = await dbContext.Jobs.FromSqlInterpolated
+        (
+            $@"
+            SELECT j.* FROM INTERESTEDJOB i
+              LEFT JOIN JOB j
+                ON i.JOB_ID = j.ID
+             WHERE USER_ID = {rawId} AND DATE_POSTED >= {cutoffDate}
+             ORDER BY DATE_POSTED DESC"
+        )
+        .CountAsync(token);
 
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
@@ -72,10 +84,10 @@ public class JobRepository(DatabaseContext dbContext)
 
         if (jobs.IsNullOrEmpty())
         {
-            return [];
+            return new PagedResult<Job>() { Items = [], ResultCount = 0, TotalCount = 0 };
         }
 
-        return jobs;
+        return new PagedResult<Job>() { Items = jobs, ResultCount = jobs.Count, TotalCount = totalCount };
     }
 
     /// <summary>
@@ -86,11 +98,20 @@ public class JobRepository(DatabaseContext dbContext)
     /// <param name="take">the number of jobs to return from the result</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
     /// <returns>A list of jobs that has been posted by the user</returns>
-    public async ValueTask<IReadOnlyList<Job>> GetUserPostedJobsAsync(Guid userId, int skip, int take, CancellationToken token)
+    public async ValueTask<PagedResult<Job>> GetUserPostedJobsAsync(Guid userId, int skip, int take, CancellationToken token)
     {
         var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
 
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(userId);
+
+        var totalCount = await dbContext.Jobs.FromSqlInterpolated
+        (
+            $@"
+            SELECT * FROM JOB
+             WHERE POSTED_BY_USER = {rawId} AND DATE_POSTED >= {cutoffDate}
+             ORDER BY DATE_POSTED DESC"
+        )
+        .CountAsync(token);
 
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
@@ -104,10 +125,10 @@ public class JobRepository(DatabaseContext dbContext)
 
         if (jobs.IsNullOrEmpty())
         {
-            return [];
+            return new PagedResult<Job>() { Items = [], ResultCount = 0, TotalCount = 0 };
         }
 
-        return jobs;
+        return new PagedResult<Job>() { Items = jobs, ResultCount = jobs.Count, TotalCount = totalCount };
     }
 
     /// <summary>
@@ -117,9 +138,18 @@ public class JobRepository(DatabaseContext dbContext)
     /// <param name="take">the number of jobs to return from the result</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
     /// <returns>A list of jobs</returns>
-    public async ValueTask<IReadOnlyList<Job>> GetPaged(int skip, int take, CancellationToken token)
+    public async ValueTask<PagedResult<Job>> GetPaged(int skip, int take, CancellationToken token)
     {
         var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
+
+        var totalCount = await dbContext.Jobs.FromSqlInterpolated
+        (
+            $@"
+            SELECT * FROM JOB
+             WHERE DATE_POSTED >= {cutoffDate}
+             ORDER BY DATE_POSTED DESC"
+        )
+        .CountAsync(token);
 
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
@@ -133,10 +163,10 @@ public class JobRepository(DatabaseContext dbContext)
 
         if (jobs.IsNullOrEmpty())
         {
-            return [];
+            return new PagedResult<Job>() { Items = [], ResultCount = 0, TotalCount = 0 };
         }
 
-        return jobs;
+        return new PagedResult<Job>() { Items = jobs, ResultCount = jobs.Count, TotalCount = totalCount };
     }
 
     /// <summary>
