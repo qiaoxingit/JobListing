@@ -26,11 +26,13 @@ public class JobRepository(DatabaseContext dbContext)
     /// </returns>
     public async ValueTask<Job?> GetByIdAsync(Guid jobId, CancellationToken token)
     {
+        var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
+
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(jobId);
 
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
-            $"SELECT * FROM JOB WHERE ID = {rawId}"
+            $"SELECT * FROM JOB WHERE ID = {rawId} AND DATE_POSTED >= {cutoffDate}"
         )
         .ToListAsync(token);
 
