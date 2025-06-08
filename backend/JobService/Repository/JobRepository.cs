@@ -91,7 +91,7 @@ public class JobRepository(DatabaseContext dbContext)
     }
 
     /// <summary>
-    /// Retrieves a list of jbos that posted by the user
+    /// Retrieves a list of jobs that posted by the user
     /// </summary>
     /// <param name="userId">The user who posted the jobs</param>
     /// <param name="skip">the number of jobs to skip from the result</param>

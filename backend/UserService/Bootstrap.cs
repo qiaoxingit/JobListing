@@ -19,6 +19,8 @@ public static class Bootstrap
     /// <param name="builder">The web application builder</param>
     public static void Configure(WebApplicationBuilder builder, AppSettings? appSettings = null)
     {
+        ConfigureAppSettings(builder, appSettings);
+
         var assemblies = AppDomain.CurrentDomain
             .GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
@@ -28,7 +30,6 @@ public static class Bootstrap
             .WithAssemblies(assemblies);
 
         ConfigureCors(builder);
-        ConfigureAppSettings(builder, appSettings);
         ConfigureDependencyInjection(builder, assemblies, configuration);
         ConfigureDatabase(builder);
     }
