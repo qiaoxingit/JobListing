@@ -237,16 +237,16 @@ public class JobRepository(DatabaseContext dbContext)
         rowsAffected += await dbContext.Database.ExecuteSqlInterpolatedAsync
         (
             $@"
-            DELETE FROM JOB
-             WHERE ID = {rawId}",
+            DELETE FROM INTERESTEDJOB
+             WHERE JOB_ID = {rawId}",
              token
         );
 
         rowsAffected += await dbContext.Database.ExecuteSqlInterpolatedAsync
         (
             $@"
-            DELETE FROM INTERESTEDJOB
-             WHERE JOB_ID = {rawId}",
+            DELETE FROM JOB
+             WHERE ID = {rawId}",
              token
         );
 
