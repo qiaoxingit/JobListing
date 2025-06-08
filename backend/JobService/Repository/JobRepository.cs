@@ -51,6 +51,8 @@ public class JobRepository(DatabaseContext dbContext)
     /// <returns>A list of jobs that the user has interest</returns>
     public async ValueTask<IReadOnlyList<Job>> GetUserInteredJobsAsync(Guid userId, int skip, int take, CancellationToken token)
     {
+        var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
+
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(userId);
 
         var jobs = await dbContext.Jobs.FromSqlInterpolated
@@ -59,7 +61,7 @@ public class JobRepository(DatabaseContext dbContext)
                 SELECT j.* FROM INTERESTEDJOB i
                   LEFT JOIN JOB j
                     ON i.JOB_ID = j.ID
-                 WHERE USER_ID = {rawId}
+                 WHERE USER_ID = {rawId} AND DATE_POSTED >= {cutoffDate}
                  ORDER BY DATE_POSTED DESC
                  LIMIT {take} OFFSET {skip}"
         )
@@ -83,13 +85,15 @@ public class JobRepository(DatabaseContext dbContext)
     /// <returns>A list of jobs that has been posted by the user</returns>
     public async ValueTask<IReadOnlyList<Job>> GetUserPostedJobsAsync(Guid userId, int skip, int take, CancellationToken token)
     {
+        var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
+
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(userId);
 
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
             $@"
                 SELECT * FROM JOB
-                 WHERE POSTED_BY_USER = {rawId}
+                 WHERE POSTED_BY_USER = {rawId} AND DATE_POSTED >= {cutoffDate}
                  ORDER BY DATE_POSTED DESC
                  LIMIT {take} OFFSET {skip}"
         )
