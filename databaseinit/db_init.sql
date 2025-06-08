@@ -50,3 +50,22 @@ INSERT INTO INTERESTEDJOB (ID, USER_ID, JOB_ID) VALUES
     (UNHEX(REPLACE('78562a76-cdf4-4589-aafb-c4958b57a15c', '-', '')),UNHEX(REPLACE('5b73bebe-eb4a-428f-8f21-94ce51e07b6e', '-', '')), UNHEX(REPLACE('d93a92cb-75cd-4c06-ab86-881cd7c1e050', '-', ''))),
     (UNHEX(REPLACE('857310d9-f03b-4598-8e80-e5aea527563e', '-', '')),UNHEX(REPLACE('93e27c43-db96-4e1f-8ccd-329e6340e939', '-', '')), UNHEX(REPLACE('5d408971-43b4-45be-ac9e-e03f36910b9e', '-', ''))),
     (UNHEX(REPLACE('c170acea-de32-4fd8-85ad-3bad901e754d', '-', '')),UNHEX(REPLACE('93e27c43-db96-4e1f-8ccd-329e6340e939', '-', '')), UNHEX(REPLACE('7e30694e-0c39-4998-92b1-4c88fc60a889', '-', '')));
+
+DELIMITER $$
+
+CREATE PROCEDURE SP_MARK_INTERESTED_JOB(
+    IN in_user_id BINARY(16),
+    IN in_job_id BINARY(16),
+    IN in_like BOOLEAN
+)
+BEGIN
+    IF in_like THEN
+        INSERT IGNORE INTO INTERESTEDJOB(ID, USER_ID, JOB_ID)
+        VALUES (UUID_TO_BIN(UUID()), in_user_id, in_job_id);
+    ELSE
+        DELETE FROM INTERESTEDJOB
+        WHERE USER_ID = in_user_id AND JOB_ID = in_job_id;
+    END IF;
+END $$
+
+DELIMITER ;
