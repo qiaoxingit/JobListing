@@ -4,27 +4,33 @@ import { useState } from "react";
 import { apiClient } from "../api/ApiClient";
 import JobCard from "../components/JobCard";
 import type { Job } from "../contracts/Job";
+import type { PagedResult } from "../contracts/PagedResult";
 
 export default function JobsPage() {
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(10);
-  const pageSize = 2;
+  const [totalPages, setTotalPages] = useState(1);
+  const pageSize = 5;
 
   const {
     data: jobs,
     isLoading,
     isError,
     error,
-  } = useQuery<Job[]>({
+  } = useQuery<PagedResult<Job>>({
     queryKey: ["jobs", page, pageSize],
     queryFn: () => fetchJobs((page - 1) * pageSize, pageSize),
   });
 
-  const fetchJobs = async (skip: number, take: number): Promise<Job[]> => {
-    const response = await apiClient.get<Job[]>(
+  const fetchJobs = async (
+    skip: number,
+    take: number
+  ): Promise<PagedResult<Job>> => {
+    const response = await apiClient.get<PagedResult<Job>>(
       `/job/job/GetPaged?skip=${skip}&take=${take}`
     );
-    setTotalPages(10);
+
+    setTotalPages(Math.ceil(response.data.totalCount / take));
+
     return response.data;
   };
 
@@ -42,7 +48,7 @@ export default function JobsPage() {
   return (
     <>
       <div className="p-4 space-y-4">
-        {jobs?.map((job: Job) => (
+        {jobs?.items?.map((job: Job) => (
           <JobCard key={job.id} job={job} />
         ))}
       </div>
@@ -52,6 +58,7 @@ export default function JobsPage() {
           page={page}
           onChange={handlePageChange}
           color="primary"
+          shape="rounded"
         />
       </div>
     </>

@@ -20,7 +20,7 @@ export default function LoginPage({
         alert("Login failed. Check your credentials.");
         return;
       }
-      localStorage.setItem("token", response.headers["Authorization"]);
+      localStorage.setItem("token", response.headers["authorization"]);
       localStorage.setItem("userId", response.data.userId);
       localStorage.setItem("username", response.data.userName);
       localStorage.setItem("firstName", response.data.firstName);
