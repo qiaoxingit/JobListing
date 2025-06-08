@@ -9,6 +9,7 @@ import {
 import { useState, type JSX } from "react";
 import type { Job } from "../contracts/Job";
 import { Role } from "../contracts/User";
+import { apiClient } from "../api/ApiClient";
 
 export default function JobCard({
   job,
@@ -26,7 +27,8 @@ export default function JobCard({
     onUpdate();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
+    await apiClient.delete<Job>(`/job/job/DeleteJob?jobId=${job.id}`);
     onUpdate();
   };
 
