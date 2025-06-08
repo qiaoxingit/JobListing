@@ -42,7 +42,8 @@ public static class Bootstrap
             {
                 policy.AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .WithExposedHeaders("Authorization");
             });
         });
     }

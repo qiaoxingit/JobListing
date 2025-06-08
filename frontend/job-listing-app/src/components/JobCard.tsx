@@ -8,7 +8,7 @@ export default function JobCard({ job }: Readonly<{ job: Job }>) {
         <Typography variant="h6">{job.title}</Typography>
         <Typography variant="body2">{job.description}</Typography>
         <Typography className="text-xs text-gray-500 mt-2">
-          Posted on {job.postedDate} by {job.postedByUser} | Expires on {job.expireDate}
+          Posted on {job.postedDate} | Expires on {job.expireDate}
         </Typography>
       </CardContent>
     </Card>
