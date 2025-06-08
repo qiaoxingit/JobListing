@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SharedLib.Contracts.UserService;
 using SharedLib.Cryptography;
+using SharedLib.Database;
 using SharedLib.Extensions;
 using System.Composition;
 using UserService.Repository.Database;
@@ -44,5 +45,29 @@ public class UserRepository(DatabaseContext dbContext, IEncryptProvider encryptP
         users[0].Password = null;
 
         return users[0];
+    }
+
+    public async ValueTask<int> RegisterAsync(User user, CancellationToken token)
+    {
+        var encryptedPassword = encryptProvider.Encrypt(user.Password!);
+
+        var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync
+        (
+            $@"
+            INSERT INTO USER(ID, EMAIL, FIRST_NAME, LAST_NAME, USERNAME, PASSWORD, ROLE)
+            VALUES 
+            (
+                {MySqlGuidConverter.GuidToMySqlBinary(Guid.NewGuid())},
+                {user.Email},
+                {user.FirstName},
+                {user.LastName}, 
+                {user.Username}, 
+                {encryptedPassword},
+                {user.Role}
+            )",
+             token
+        );
+
+        return rowsAffected;
     }
 }
