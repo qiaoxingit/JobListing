@@ -36,4 +36,17 @@ public class UserController(UserRepository userRepository) : ControllerBase
 
         return Ok(user);
     }
+
+    [HttpPost("Register")]
+    public async ValueTask<IActionResult> RegisterAsync([FromBody] User user, [FromRoute] CancellationToken token)
+    {
+        var rowAffected = await userRepository.RegisterAsync(user, token);
+
+        if (rowAffected != 1)
+        {
+            return NotFound("The email is already used.");
+        }
+
+        return Ok();
+    }
 }
