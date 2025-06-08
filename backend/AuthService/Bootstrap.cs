@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using SharedLib.Bootstrap;
+using SharedLib.Cryptography;
 using System.Composition;
 using System.Composition.Hosting;
 using System.Reflection;
@@ -17,6 +18,8 @@ public static class Bootstrap
     /// <param name="builder">The web application builder</param>
     public static void Configure(WebApplicationBuilder builder)
     {
+        ConfigureAppSettings(builder);
+
         var assemblies = AppDomain.CurrentDomain
             .GetAssemblies()
             .Where(a => !a.IsDynamic && !string.IsNullOrWhiteSpace(a.Location))
@@ -26,7 +29,6 @@ public static class Bootstrap
             .WithAssemblies(assemblies);
 
         ConfigureCors(builder);
-        ConfigureAppSettings(builder);
         ConfigureDependencyInjection(builder, assemblies, configuration);
         ConfigureHttpClients(builder);
     }

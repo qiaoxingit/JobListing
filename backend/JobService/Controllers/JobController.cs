@@ -1,6 +1,8 @@
 ﻿using JobService.Repository;
 using Microsoft.AspNetCore.Mvc;
 using SharedLib.Contracts.JobService;
+using SharedLib.Contracts.UserService;
+using SharedLib.Cryptography;
 using SharedLib.Extensions;
 
 namespace JobService.Controllers;
@@ -10,11 +12,16 @@ namespace JobService.Controllers;
 /// </summary>
 [ApiController]
 [Route("[controller]")]
-public class JobController(JobRepository jobRepository) : ControllerBase
+public class JobController(JobRepository jobRepository, IPermissionService permissionService) : ControllerBase
 {
     [HttpGet("GetById")]
-    public async ValueTask<IActionResult> GetByIdAsync([FromQuery] Guid id, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> GetByIdAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid id, [FromRoute] CancellationToken token)
     {
+        if (!permissionService.DemandPermission(authToken))
+        {
+            return Unauthorized();
+        }
+
         if (id == Guid.Empty)
         {
             return BadRequest("No job id provided.");
@@ -31,14 +38,24 @@ public class JobController(JobRepository jobRepository) : ControllerBase
     }
 
     [HttpGet("GetPaged")]
-    public async ValueTask<IActionResult> GetAllJobs([FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
+    public async ValueTask<IActionResult> GetAllJobs([FromHeader(Name = "Authorization")] string? authToken, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
     {
+        if (!permissionService.DemandPermission(authToken))
+        {
+            return Unauthorized();
+        }
+
         return Ok(await jobRepository.GetPaged(skip, take, token));
     }
 
     [HttpGet("GetUserInteredJobs")]
-    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromQuery] Guid userId, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
+    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid userId, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
     {
+        if (!permissionService.DemandPermission(authToken, Role.Viewer))
+        {
+            return Unauthorized();
+        }
+
         if (userId == Guid.Empty)
         {
             return BadRequest("No user id provided.");
@@ -50,8 +67,13 @@ public class JobController(JobRepository jobRepository) : ControllerBase
     }
 
     [HttpGet("GetUserPostedJobs")]
-    public async ValueTask<IActionResult> GetUserPostedJobsAsync([FromQuery] Guid userId, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
+    public async ValueTask<IActionResult> GetUserPostedJobsAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid userId, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
     {
+        if (!permissionService.DemandPermission(authToken, Role.Poster))
+        {
+            return Unauthorized();
+        }
+
         if (userId == Guid.Empty)
         {
             return BadRequest("No user id provided.");
@@ -63,8 +85,13 @@ public class JobController(JobRepository jobRepository) : ControllerBase
     }
 
     [HttpGet("UpdateJob")]
-    public async ValueTask<IActionResult> UpdateJobAsync([FromBody] Job job, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> UpdateJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromBody] Job job, [FromRoute] CancellationToken token)
     {
+        if (!permissionService.DemandPermission(authToken, Role.Poster))
+        {
+            return Unauthorized();
+        }
+
         if (job is null)
         {
             return BadRequest("No job is provided.");
@@ -103,8 +130,13 @@ public class JobController(JobRepository jobRepository) : ControllerBase
     }
 
     [HttpGet("CreateJob")]
-    public async ValueTask<IActionResult> CreateJobAsync([FromBody] Job job, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> CreateJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromBody] Job job, [FromRoute] CancellationToken token)
     {
+        if (!permissionService.DemandPermission(authToken, Role.Poster))
+        {
+            return Unauthorized();
+        }
+
         if (job is null)
         {
             return BadRequest("No job is provided.");

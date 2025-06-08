@@ -1,7 +1,7 @@
-﻿using AuthService.Providers;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using SharedLib.Contracts.AuthService;
 using SharedLib.Contracts.UserService;
+using SharedLib.Cryptography;
 using SharedLib.Extensions;
 using SharedLib.Http;
 
@@ -51,7 +51,7 @@ public class AuthController(IJwtProvider jwtProvider, IHttpClientFactory httpCli
             return NotFound("No user found by username and password provided.");
         }
 
-        var authToken = jwtProvider.GenerateToken(user.Id);
+        var authToken = jwtProvider.GenerateToken(user);
         Response.Headers["Authorization"] = $"{authToken}";
 
         var response = new AuthenticationResponse
