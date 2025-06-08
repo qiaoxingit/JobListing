@@ -20,10 +20,16 @@ export default function JobCard({
     setLiked((prev) => !prev);
   };
 
+  const userId = localStorage.getItem("userId");
+  const isMyJob = userId !== null && job.postedByUser === userId;
+  const cardBackgroundColor = isMyJob ? "bg-yellow-100" : "bg-white";
+
   return (
     <Card className="rounded-2xl shadow p-2">
       <CardContent>
-        <div className="flex justify-between items-start">
+        <div
+          className={`flex justify-between items-start ${cardBackgroundColor}`}
+        >
           <div className="flex-1">
             <Typography variant="h6">{job.title}</Typography>
             <Typography variant="body2">{job.description}</Typography>
