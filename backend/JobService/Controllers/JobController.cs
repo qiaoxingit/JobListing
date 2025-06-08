@@ -44,14 +44,9 @@ public class JobController(JobRepository jobRepository) : ControllerBase
             return BadRequest("No user id provided.");
         }
 
-        var jobs = await jobRepository.GetUserInteredJobsAsync(userId, skip, take, token);
+        var result = await jobRepository.GetUserInteredJobsAsync(userId, skip, take, token);
 
-        if (jobs.IsNullOrEmpty())
-        {
-            return NotFound("No jobs found.");
-        }
-
-        return Ok(jobs);
+        return Ok(result);
     }
 
     [HttpGet("GetUserPostedJobs")]
@@ -62,14 +57,9 @@ public class JobController(JobRepository jobRepository) : ControllerBase
             return BadRequest("No user id provided.");
         }
 
-        var jobs = await jobRepository.GetUserPostedJobsAsync(userId, skip, take, token);
+        var result = await jobRepository.GetUserPostedJobsAsync(userId, skip, take, token);
 
-        if (jobs.IsNullOrEmpty())
-        {
-            return NotFound("No jobs found.");
-        }
-
-        return Ok(jobs);
+        return Ok(result);
     }
 
     [HttpGet("UpdateJob")]
@@ -129,7 +119,7 @@ public class JobController(JobRepository jobRepository) : ControllerBase
         {
             return BadRequest("No job description is provided.");
         }
-        
+
         if (job.PostedByUser == Guid.Empty)
         {
             return BadRequest("No user ID is provided.");
