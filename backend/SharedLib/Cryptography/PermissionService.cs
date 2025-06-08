@@ -5,6 +5,7 @@ using System;
 using System.Composition;
 using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 
 namespace SharedLib.Cryptography;
 
@@ -86,7 +87,15 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
 
         var claims = jwtProvider.GetClaims(token!);
 
-        if (!Guid.TryParse(claims.FirstOrDefault(c => c.Type.EqualsIgnoreCase("UserId"))?.Value, out var userId))
+        Console.WriteLine("Claims found:");
+        foreach (var claim in claims)
+        {
+            Console.WriteLine($" - {claim.Type} = {claim.Value}");
+        }
+
+        var userIdClaim = claims.FirstOrDefault(c => string.Equals(c.Type, ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase));
+
+        if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
         {
             return false;
         }

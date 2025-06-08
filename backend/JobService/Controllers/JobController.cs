@@ -205,7 +205,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
     [HttpGet("MarkInterestedJob")]
     public async ValueTask<IActionResult> MarkInterestedJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid userId, [FromQuery] Guid jobId, [FromRoute] CancellationToken token, [FromQuery] bool like = true)
     {
-        if (!permissionService.DemandPermission(authToken, Role.Viewer))
+        if (!permissionService.DemandPermission(authToken, Role.Poster))
         {
             return Unauthorized();
         }
