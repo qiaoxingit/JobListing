@@ -33,7 +33,7 @@ public class JwtProvider : IJwtProvider
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+            new Claim(ClaimTypes.NameIdentifier, user.Id!.Value.ToString()),
             new Claim("Role", $"{user.Role}"),
             new Claim("ExpirationDate", $"{expirationDate:yyyyMMddTHHmmss}"),
         };

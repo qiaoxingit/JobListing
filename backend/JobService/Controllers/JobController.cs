@@ -49,7 +49,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
     }
 
     [HttpGet("GetUserInteredJobs")]
-    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid userId, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
+    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid userId, [FromRoute] CancellationToken token)
     {
         if (!permissionService.DemandPermission(authToken, Role.Viewer))
         {
@@ -61,7 +61,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
             return BadRequest("No user id provided.");
         }
 
-        var result = await jobRepository.GetUserInteredJobsAsync(userId, skip, take, token);
+        var result = await jobRepository.GetUserInteredJobsAsync(userId, token);
 
         return Ok(result);
     }
