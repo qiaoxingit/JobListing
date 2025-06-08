@@ -1,4 +1,5 @@
-﻿using SharedLib.Contracts.UserService;
+﻿using SharedLib.Contracts.JobService;
+using SharedLib.Contracts.UserService;
 using SharedLib.Extensions;
 using System;
 using System.Composition;
@@ -73,5 +74,23 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
         }
 
         return expirationDateCliam >= DateTime.UtcNow;
+    }
+
+    /// <inheritdoc />
+    public bool DemandPermission(string? token, Job job)
+    {
+        if (token.IsNullOrEmpty())
+        {
+            return false;
+        }
+
+        var claims = jwtProvider.GetClaims(token!);
+
+        if (!Guid.TryParse(claims.FirstOrDefault(c => c.Type.EqualsIgnoreCase("UserId"))?.Value, out var userId))
+        {
+            return false;
+        }
+
+        return job.PostedByUser.HasValue && userId == job.PostedByUser.Value;
     }
 }
