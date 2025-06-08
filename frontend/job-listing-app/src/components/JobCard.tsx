@@ -6,20 +6,30 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { useState, type JSX } from "react";
+import { type JSX } from "react";
+import { apiClient } from "../api/ApiClient";
 import type { Job } from "../contracts/Job";
 import { Role } from "../contracts/User";
-import { apiClient } from "../api/ApiClient";
 
 export default function JobCard({
   job,
+  liked,
   role,
   onUpdate,
-}: Readonly<{ job: Job; role: Role | null; onUpdate: () => void }>) {
-  const [liked, setLiked] = useState(false);
+}: Readonly<{
+  job: Job;
+  liked: boolean;
+  role: Role | null;
+  onUpdate: () => void;
+}>) {
+  const userId = localStorage.getItem("userId");
+  const isMyJob = userId !== null && job.postedByUser === userId;
 
-  const handleLike = () => {
-    setLiked((prev) => !prev);
+  const handleLike = async () => {
+    liked = !liked;
+    await apiClient.get<Job>(
+      `/job/job/MarkInterestedJob?userId=${userId}&jobId=${job.id}&like=${liked}`
+    );
     onUpdate();
   };
 
@@ -31,9 +41,6 @@ export default function JobCard({
     await apiClient.delete<Job>(`/job/job/DeleteJob?jobId=${job.id}`);
     onUpdate();
   };
-
-  const userId = localStorage.getItem("userId");
-  const isMyJob = userId !== null && job.postedByUser === userId;
 
   let actionButtons: JSX.Element | null = null;
 
