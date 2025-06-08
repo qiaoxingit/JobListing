@@ -19,6 +19,7 @@ export default function JobsPage() {
     isLoading,
     isError,
     error,
+    refetch,
   } = useQuery<PagedResult<Job>>({
     queryKey: ["jobs", page, pageSize],
     queryFn: () => fetchJobs((page - 1) * pageSize, pageSize),
@@ -52,7 +53,7 @@ export default function JobsPage() {
     <>
       <div className="p-4 space-y-4">
         {jobs?.items?.map((job: Job) => (
-          <JobCard key={job.id} job={job} role={role} />
+          <JobCard key={job.id} job={job} role={role} onUpdate={refetch} />
         ))}
       </div>
       <div className="flex justify-center mt-4">
