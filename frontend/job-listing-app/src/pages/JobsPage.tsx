@@ -5,11 +5,14 @@ import { apiClient } from "../api/ApiClient";
 import JobCard from "../components/JobCard";
 import type { Job } from "../contracts/Job";
 import type { PagedResult } from "../contracts/PagedResult";
+import type { Role } from "../contracts/User";
 
 export default function JobsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const pageSize = 5;
+  const rawRole = localStorage.getItem("role");
+  const role = rawRole !== null ? (Number(rawRole) as Role) : null;
 
   const {
     data: jobs,
@@ -49,7 +52,7 @@ export default function JobsPage() {
     <>
       <div className="p-4 space-y-4">
         {jobs?.items?.map((job: Job) => (
-          <JobCard key={job.id} job={job} />
+          <JobCard key={job.id} job={job} role={role} />
         ))}
       </div>
       <div className="flex justify-center mt-4">

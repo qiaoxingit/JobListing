@@ -7,4 +7,10 @@ export interface User {
     role: Role;
 }
 
-export type Role = 'Poster' | 'Viewer';
+export const Role = {
+    Viewer: 0,
+    Poster: 1,
+} as const;
+
+export type Role = (typeof Role)[keyof typeof Role];
+
