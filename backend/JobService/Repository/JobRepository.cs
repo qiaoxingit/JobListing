@@ -58,12 +58,12 @@ public class JobRepository(DatabaseContext dbContext)
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
             $@"
-                SELECT j.* FROM INTERESTEDJOB i
-                  LEFT JOIN JOB j
-                    ON i.JOB_ID = j.ID
-                 WHERE USER_ID = {rawId} AND DATE_POSTED >= {cutoffDate}
-                 ORDER BY DATE_POSTED DESC
-                 LIMIT {take} OFFSET {skip}"
+            SELECT j.* FROM INTERESTEDJOB i
+              LEFT JOIN JOB j
+                ON i.JOB_ID = j.ID
+             WHERE USER_ID = {rawId} AND DATE_POSTED >= {cutoffDate}
+             ORDER BY DATE_POSTED DESC
+             LIMIT {take} OFFSET {skip}"
         )
         .ToListAsync(token);
 
@@ -92,10 +92,10 @@ public class JobRepository(DatabaseContext dbContext)
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
             $@"
-                SELECT * FROM JOB
-                 WHERE POSTED_BY_USER = {rawId} AND DATE_POSTED >= {cutoffDate}
-                 ORDER BY DATE_POSTED DESC
-                 LIMIT {take} OFFSET {skip}"
+            SELECT * FROM JOB
+             WHERE POSTED_BY_USER = {rawId} AND DATE_POSTED >= {cutoffDate}
+             ORDER BY DATE_POSTED DESC
+             LIMIT {take} OFFSET {skip}"
         )
         .ToListAsync(token);
 
@@ -121,8 +121,7 @@ public class JobRepository(DatabaseContext dbContext)
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
             $@"
-            SELECT * 
-              FROM JOB
+            SELECT * FROM JOB
              WHERE DATE_POSTED >= {cutoffDate}
              ORDER BY DATE_POSTED DESC
              LIMIT {take} OFFSET {skip}"
@@ -135,5 +134,26 @@ public class JobRepository(DatabaseContext dbContext)
         }
 
         return jobs;
+    }
+
+    /// <summary>
+    /// Updates job
+    /// </summary>
+    /// <param name="job">The job to be updated</param>
+    public async ValueTask<int> UpdateJobAsync(Job job, CancellationToken token)
+    {
+        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id);
+
+        var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync
+        (
+            $@"
+            UPDATE JOB
+               SET TITLE = {job.Title},
+                   DESCRIPTION = {job.Description}
+             WHERE ID = {rawId}",
+             token
+        );
+
+        return rowsAffected;
     }
 }

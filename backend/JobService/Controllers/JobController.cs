@@ -1,5 +1,6 @@
 ﻿using JobService.Repository;
 using Microsoft.AspNetCore.Mvc;
+using SharedLib.Contracts.JobService;
 using SharedLib.Extensions;
 
 namespace JobService.Controllers;
@@ -69,5 +70,45 @@ public class JobController(JobRepository jobRepository) : ControllerBase
         }
 
         return Ok(jobs);
+    }
+
+    [HttpGet("UpdateJob")]
+    public async ValueTask<IActionResult> UpdateJobAsync([FromBody] Job job, [FromRoute] CancellationToken token)
+    {
+        if (job is null)
+        {
+            return BadRequest("No job is provided.");
+        }
+
+        if (job.Id == Guid.Empty)
+        {
+            return BadRequest("No jobId is provided.");
+        }
+
+        if (job.Title.IsNullOrEmpty())
+        {
+            return BadRequest("No job title is provided.");
+        }
+
+        if (job.Description.IsNullOrEmpty())
+        {
+            return BadRequest("No job description is provided.");
+        }
+
+        var oldJob = await jobRepository.GetByIdAsync(job.Id, token);
+
+        if (oldJob is null)
+        {
+            return NotFound($"Job/{job.Id} doesn't exist.");
+        }
+
+        var rowsAffected = await jobRepository.UpdateJobAsync(job, token);
+
+        if (rowsAffected != 1)
+        {
+            return Conflict($"There is {rowsAffected} rows updated, which is unexpected.");
+        }
+
+        return Ok();
     }
 }
