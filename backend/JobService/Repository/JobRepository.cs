@@ -13,7 +13,7 @@ namespace JobService.Repository;
 [Export(typeof(JobRepository))]
 public class JobRepository(DatabaseContext dbContext)
 {
-    private const int recentMonthThreshold = 2;
+    private const int recentMonthThreshold = -2;
 
     /// <summary>
     /// Retrieves a job by ID
