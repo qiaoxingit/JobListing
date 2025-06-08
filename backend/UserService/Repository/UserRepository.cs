@@ -18,10 +18,11 @@ public class UserRepository(DatabaseContext dbContext, IEncryptProvider encryptP
     /// </summary>
     /// <param name="username">The username of the user</param>
     /// <param name="password">The password of the user</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
     /// <returns>
     /// A <see cref="User"/> if found; otherwise, <c>null</c>
     /// </returns>
-    public async ValueTask<User?> GetAsync(string username, string password)
+    public async ValueTask<User?> GetAsync(string username, string password, CancellationToken token)
     {
         var encryptedPassword = encryptProvider.Encrypt(password);
 
@@ -33,7 +34,7 @@ public class UserRepository(DatabaseContext dbContext, IEncryptProvider encryptP
              WHERE USERNAME = {username}
                AND PASSWORD = {encryptedPassword}"
         )
-        .ToListAsync();
+        .ToListAsync(token);
 
         if (users.IsNullOrEmpty() || users.Count > 1)
         {

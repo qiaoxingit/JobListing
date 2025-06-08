@@ -19,7 +19,7 @@ public class JobController(JobRepository jobRepository) : ControllerBase
             return BadRequest("No job id provided.");
         }
 
-        var job = await jobRepository.GetByIdAsync(id);
+        var job = await jobRepository.GetByIdAsync(id, token);
 
         if (job is null)
         {
@@ -29,15 +29,21 @@ public class JobController(JobRepository jobRepository) : ControllerBase
         return Ok(job);
     }
 
+    [HttpGet("GetPaged")]
+    public async ValueTask<IActionResult> GetAllJobs([FromQuery] int skip = 0, [FromQuery] int take = 10, [FromRoute] CancellationToken token)
+    {
+        return Ok(await jobRepository.GetPaged(skip, take, token));
+    }
+
     [HttpGet("GetUserInteredJobs")]
-    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromQuery] Guid userId, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromQuery] Guid userId, [FromQuery] int skip = 0, [FromQuery] int take = 10, [FromRoute] CancellationToken token)
     {
         if (userId == Guid.Empty)
         {
             return BadRequest("No user id provided.");
         }
 
-        var jobs = await jobRepository.GetUserInteredJobsAsync(userId);
+        var jobs = await jobRepository.GetUserInteredJobsAsync(userId, skip, take, token);
 
         if (jobs.IsNullOrEmpty())
         {
@@ -48,14 +54,14 @@ public class JobController(JobRepository jobRepository) : ControllerBase
     }
 
     [HttpGet("GetUserPostedJobs")]
-    public async ValueTask<IActionResult> GetUserPostedJobsAsync([FromQuery] Guid userId, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> GetUserPostedJobsAsync([FromQuery] Guid userId, [FromQuery] int skip = 0, [FromQuery] int take = 10, [FromRoute] CancellationToken token)
     {
         if (userId == Guid.Empty)
         {
             return BadRequest("No user id provided.");
         }
 
-        var jobs = await jobRepository.GetUserPostedJobsAsync(userId);
+        var jobs = await jobRepository.GetUserPostedJobsAsync(userId, skip, take, token);
 
         if (jobs.IsNullOrEmpty())
         {
