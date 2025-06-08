@@ -49,26 +49,13 @@ public class JobRepository(DatabaseContext dbContext)
     /// Retrieves a list of jbos that the user has interest
     /// </summary>
     /// <param name="userId">The user who has interet</param>
-    /// <param name="skip">the number of jobs to skip from the result</param>
-    /// <param name="take">the number of jobs to return from the result</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
     /// <returns>A list of jobs that the user has interest</returns>
-    public async ValueTask<PagedResult<Job>> GetUserInteredJobsAsync(Guid userId, int skip, int take, CancellationToken token)
+    public async ValueTask<IReadOnlyList<Job>> GetUserInteredJobsAsync(Guid userId, CancellationToken token)
     {
         var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
 
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(userId);
-
-        var totalCount = await dbContext.Jobs.FromSqlInterpolated
-        (
-            $@"
-            SELECT j.* FROM INTERESTEDJOB i
-              LEFT JOIN JOB j
-                ON i.JOB_ID = j.ID
-             WHERE USER_ID = {rawId} AND DATE_POSTED >= {cutoffDate}
-             ORDER BY DATE_POSTED DESC"
-        )
-        .CountAsync(token);
 
         var jobs = await dbContext.Jobs.FromSqlInterpolated
         (
@@ -77,17 +64,16 @@ public class JobRepository(DatabaseContext dbContext)
               LEFT JOIN JOB j
                 ON i.JOB_ID = j.ID
              WHERE USER_ID = {rawId} AND DATE_POSTED >= {cutoffDate}
-             ORDER BY DATE_POSTED DESC
-             LIMIT {take} OFFSET {skip}"
+             ORDER BY DATE_POSTED DESC"
         )
         .ToListAsync(token);
 
         if (jobs.IsNullOrEmpty())
         {
-            return new PagedResult<Job>() { Items = [], ResultCount = 0, TotalCount = 0 };
+            return [];
         }
 
-        return new PagedResult<Job>() { Items = jobs, ResultCount = jobs.Count, TotalCount = totalCount };
+        return jobs!;
     }
 
     /// <summary>
