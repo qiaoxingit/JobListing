@@ -27,6 +27,15 @@ export default function JobsPage() {
   const [newJobTitle, setNewJobTitle] = useState("");
   const [newJobDescription, setNewJobDescription] = useState("");
 
+  const userId = localStorage.getItem("userId");
+
+  const { data: interestedJobs, refetch: refetchInterestedJobs } = useQuery<
+    Job[]
+  >({
+    queryKey: ["interestedJobs", userId],
+    queryFn: () => fetchInterestedJobs(userId),
+  });
+
   const {
     data: jobs,
     isLoading,
@@ -38,6 +47,11 @@ export default function JobsPage() {
     queryFn: () => fetchJobs((page - 1) * pageSize, pageSize),
   });
 
+  const refretchAllQueries = () => {
+    refetch();
+    refetchInterestedJobs();
+  };
+
   const fetchJobs = async (
     skip: number,
     take: number
@@ -47,6 +61,14 @@ export default function JobsPage() {
     );
 
     setTotalPages(Math.ceil(response.data.totalCount / take));
+
+    return response.data;
+  };
+
+  const fetchInterestedJobs = async (userId: string | null): Promise<Job[]> => {
+    const response = await apiClient.get<Job[]>(
+      `/job/job/GetUserInteredJobs?userId=${userId}`
+    );
 
     return response.data;
   };
@@ -63,7 +85,6 @@ export default function JobsPage() {
   };
 
   const handlePost = async () => {
-    const userId = localStorage.getItem("userId");
     try {
       await apiClient.post<Job>("/job/job/CreateJob", {
         title: newJobTitle,
@@ -96,7 +117,13 @@ export default function JobsPage() {
 
       <div className="p-4 space-y-4">
         {jobs?.items?.map((job: Job) => (
-          <JobCard key={job.id} job={job} role={role} onUpdate={refetch} />
+          <JobCard
+            key={job.id}
+            job={job}
+            liked={(interestedJobs ?? []).some((j) => j.id === job.id)}
+            role={role}
+            onUpdate={refretchAllQueries}
+          />
         ))}
       </div>
 
