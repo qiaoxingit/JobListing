@@ -111,4 +111,37 @@ public class JobController(JobRepository jobRepository) : ControllerBase
 
         return Ok();
     }
+
+    [HttpGet("CreateJob")]
+    public async ValueTask<IActionResult> CreateJobAsync([FromBody] Job job, [FromRoute] CancellationToken token)
+    {
+        if (job is null)
+        {
+            return BadRequest("No job is provided.");
+        }
+
+        if (job.Title.IsNullOrEmpty())
+        {
+            return BadRequest("No job title is provided.");
+        }
+
+        if (job.Description.IsNullOrEmpty())
+        {
+            return BadRequest("No job description is provided.");
+        }
+        
+        if (job.PostedByUser == Guid.Empty)
+        {
+            return BadRequest("No user ID is provided.");
+        }
+
+        var rowsAffected = await jobRepository.CreateJobAsync(job, token);
+
+        if (rowsAffected != 1)
+        {
+            return Conflict($"There is {rowsAffected} rows created, which is unexpected.");
+        }
+
+        return Ok();
+    }
 }

@@ -14,6 +14,7 @@ namespace JobService.Repository;
 public class JobRepository(DatabaseContext dbContext)
 {
     private const int recentMonthThreshold = -2;
+    private const int expirationMonth = 2;
 
     /// <summary>
     /// Retrieves a job by ID
@@ -140,6 +141,7 @@ public class JobRepository(DatabaseContext dbContext)
     /// Updates job
     /// </summary>
     /// <param name="job">The job to be updated</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
     public async ValueTask<int> UpdateJobAsync(Job job, CancellationToken token)
     {
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id);
@@ -151,6 +153,35 @@ public class JobRepository(DatabaseContext dbContext)
                SET TITLE = {job.Title},
                    DESCRIPTION = {job.Description}
              WHERE ID = {rawId}",
+             token
+        );
+
+        return rowsAffected;
+    }
+
+    /// <summary>
+    /// Creates job
+    /// </summary>
+    /// <param name="job">The job to be created</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
+    public async ValueTask<int> CreateJobAsync(Job job, CancellationToken token)
+    {
+        var postedDate = DateTime.UtcNow;
+        var expiredDate = postedDate.AddMonths(expirationMonth);
+
+        var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync
+        (
+            $@"
+            INSERT INTO JOB(ID, TITLE, DESCRIPTION, DATE_POSTED, DATE_EXPIRED, POSTED_BY_USER)
+            VALUES 
+            (
+                {MySqlGuidConverter.GuidToMySqlBinary(Guid.NewGuid())},
+                {job.Title},
+                {job.Description},
+                {postedDate}, 
+                {expiredDate}, 
+                {MySqlGuidConverter.GuidToMySqlBinary(job.PostedByUser)}
+            )",
              token
         );
 
