@@ -176,7 +176,7 @@ public class JobRepository(DatabaseContext dbContext)
     /// <param name="token">A token to monitor for cancellation requests</param>
     public async ValueTask<int> UpdateJobAsync(Job job, CancellationToken token)
     {
-        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id);
+        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id.Value);
 
         var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync
         (
@@ -212,8 +212,28 @@ public class JobRepository(DatabaseContext dbContext)
                 {job.Description},
                 {postedDate}, 
                 {expiredDate}, 
-                {MySqlGuidConverter.GuidToMySqlBinary(job.PostedByUser)}
+                {MySqlGuidConverter.GuidToMySqlBinary(job.PostedByUser!.Value)}
             )",
+             token
+        );
+
+        return rowsAffected;
+    }
+
+    /// <summary>
+    /// Delete job
+    /// </summary>
+    /// <param name="job">The job to be deleted</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
+    public async ValueTask<int> DeleteJobAsync(Job job, CancellationToken token)
+    {
+        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id!.Value);
+
+        var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync
+        (
+            $@"
+            DELETE FROM JOB
+             WHERE ID = {rawId}",
              token
         );
 

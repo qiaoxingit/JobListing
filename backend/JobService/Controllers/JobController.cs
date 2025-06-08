@@ -97,7 +97,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
             return BadRequest("No job is provided.");
         }
 
-        if (job.Id == Guid.Empty)
+        if (!job.Id.HasValue || job.Id == Guid.Empty)
         {
             return BadRequest("No jobId is provided.");
         }
@@ -112,7 +112,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
             return BadRequest("No job description is provided.");
         }
 
-        var oldJob = await jobRepository.GetByIdAsync(job.Id, token);
+        var oldJob = await jobRepository.GetByIdAsync(job.Id.Value, token);
 
         if (oldJob is null)
         {
@@ -152,7 +152,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
             return BadRequest("No job description is provided.");
         }
 
-        if (job.PostedByUser == Guid.Empty)
+        if (!job.PostedByUser.HasValue || job.PostedByUser == Guid.Empty)
         {
             return BadRequest("No user ID is provided.");
         }
@@ -162,6 +162,46 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
         if (rowsAffected != 1)
         {
             return Conflict($"There is {rowsAffected} rows created, which is unexpected.");
+        }
+
+        return Ok();
+    }
+
+    [HttpGet("DeleteJob")]
+    public async ValueTask<IActionResult> DeleteJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromBody] Job job, [FromRoute] CancellationToken token)
+    {
+        if (!permissionService.DemandPermission(authToken, Role.Poster))
+        {
+            return Unauthorized();
+        }
+
+        if (job is null)
+        {
+            return BadRequest("No job is provided.");
+        }
+
+        if (!job.Id.HasValue || job.Id == Guid.Empty)
+        {
+            return BadRequest("No job id is provided.");
+        }
+
+        var oldJob = await jobRepository.GetByIdAsync(job.Id.Value, token);
+
+        if (oldJob is null)
+        {
+            return NotFound($"Job/{job.Id} doesn't exist.");
+        }
+
+        if (oldJob.PostedByUser != job.PostedByUser)
+        {
+            return BadRequest("Deleting is not allowed");
+        }
+
+        var rowsAffected = await jobRepository.DeleteJobAsync(job, token);
+
+        if (rowsAffected != 1)
+        {
+            return Conflict($"There is {rowsAffected} rows updated, which is unexpected.");
         }
 
         return Ok();
