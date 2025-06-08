@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SharedLib.Contracts.UserService;
+using System;
 
 namespace SharedLib.Contracts.AuthService;
 
@@ -21,4 +22,16 @@ public class AuthenticationResponse
     /// Gets or sets the username of the authenticated user
     /// </summary>
     public required string UserName { get; set; }
+
+    /// <summary>
+    /// Gets or sets the firstname of the authenticated user
+    /// </summary>
+    public required string FirstName {  get; set; }
+
+    /// <summary>
+    /// Gets or sets the lastname of the authenticated user
+    /// </summary>
+    public required string LastName { get; set; }
+
+    public required Role Role { get; set; }
 }

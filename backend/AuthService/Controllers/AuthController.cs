@@ -59,6 +59,9 @@ public class AuthController(IJwtProvider jwtProvider, IHttpClientFactory httpCli
             IsAuthenticated = true,
             UserId = user.Id,
             UserName = user.Username,
+            FirstName = user.FirstName,
+            LastName = user.LastName,
+            Role = user.Role,
         };
 
         return Ok(response);
