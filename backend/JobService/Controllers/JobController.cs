@@ -30,13 +30,13 @@ public class JobController(JobRepository jobRepository) : ControllerBase
     }
 
     [HttpGet("GetPaged")]
-    public async ValueTask<IActionResult> GetAllJobs([FromQuery] int skip = 0, [FromQuery] int take = 10, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> GetAllJobs([FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
     {
         return Ok(await jobRepository.GetPaged(skip, take, token));
     }
 
     [HttpGet("GetUserInteredJobs")]
-    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromQuery] Guid userId, [FromQuery] int skip = 0, [FromQuery] int take = 10, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> GetUserInteredJobsAsync([FromQuery] Guid userId, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
     {
         if (userId == Guid.Empty)
         {
@@ -54,7 +54,7 @@ public class JobController(JobRepository jobRepository) : ControllerBase
     }
 
     [HttpGet("GetUserPostedJobs")]
-    public async ValueTask<IActionResult> GetUserPostedJobsAsync([FromQuery] Guid userId, [FromQuery] int skip = 0, [FromQuery] int take = 10, [FromRoute] CancellationToken token)
+    public async ValueTask<IActionResult> GetUserPostedJobsAsync([FromQuery] Guid userId, [FromRoute] CancellationToken token, [FromQuery] int skip = 0, [FromQuery] int take = 10)
     {
         if (userId == Guid.Empty)
         {
