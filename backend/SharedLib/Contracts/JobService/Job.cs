@@ -5,13 +5,8 @@ namespace SharedLib.Contracts.JobService;
 /// <summary>
 /// Represents a job posted in the system
 /// </summary>
-public class Job
+public class Job : Entity
 {
-    /// <summary>
-    /// Gets or sets the Id of the job
-    /// </summary>
-    public Guid? Id { get; set; }
-
     /// <summary>
     /// Gets or sets the title of the job
     /// </summary>

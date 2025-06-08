@@ -57,11 +57,11 @@ public class AuthController(IJwtProvider jwtProvider, IHttpClientFactory httpCli
         var response = new AuthenticationResponse
         {
             IsAuthenticated = true,
-            UserId = user.Id,
-            UserName = user.Username,
-            FirstName = user.FirstName,
-            LastName = user.LastName,
-            Role = user.Role,
+            UserId = user.Id!.Value,
+            UserName = user.Username!,
+            FirstName = user.FirstName!,
+            LastName = user.LastName!,
+            Role = user.Role!.Value,
         };
 
         return Ok(response);

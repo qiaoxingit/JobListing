@@ -174,6 +174,7 @@ public class JobRepository(DatabaseContext dbContext)
     /// </summary>
     /// <param name="job">The job to be updated</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
+    /// <returns>The number of affected rows</returns>
     public async ValueTask<int> UpdateJobAsync(Job job, CancellationToken token)
     {
         byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id.Value);
@@ -196,6 +197,7 @@ public class JobRepository(DatabaseContext dbContext)
     /// </summary>
     /// <param name="job">The job to be created</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
+    /// <returns>The number of affected rows</returns>
     public async ValueTask<int> CreateJobAsync(Job job, CancellationToken token)
     {
         var postedDate = DateTime.UtcNow;
@@ -223,13 +225,16 @@ public class JobRepository(DatabaseContext dbContext)
     /// <summary>
     /// Delete job
     /// </summary>
-    /// <param name="job">The job to be deleted</param>
+    /// <param name="jobId">The id of the job to be deleted</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
-    public async ValueTask<int> DeleteJobAsync(Job job, CancellationToken token)
+    /// <returns>The number of affected rows</returns>
+    public async ValueTask<int> DeleteJobAsync(Guid jobId, CancellationToken token)
     {
-        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id!.Value);
+        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(jobId);
 
-        var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync
+        int rowsAffected = 0;
+
+        rowsAffected += await dbContext.Database.ExecuteSqlInterpolatedAsync
         (
             $@"
             DELETE FROM JOB
@@ -237,6 +242,35 @@ public class JobRepository(DatabaseContext dbContext)
              token
         );
 
+        rowsAffected += await dbContext.Database.ExecuteSqlInterpolatedAsync
+        (
+            $@"
+            DELETE FROM INTERESTEDJOB
+             WHERE JOB_ID = {rawId}",
+             token
+        );
+
         return rowsAffected;
+    }
+
+    /// <summary>
+    /// Mark intertested job
+    /// </summary>
+    /// <param name="userId">The id of the user who interested in the job</param>
+    /// <param name="like">Indicates whether user has interests of the job or not</param>
+    /// <param name="jobId">The id of the job which is interested in</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
+    /// <returns>The number of affected rows</returns>
+    public async ValueTask MarkInterestedJobAsync(Guid userId, bool like, Guid jobId, CancellationToken token)
+    {
+        byte[] jobRawId = MySqlGuidConverter.GuidToMySqlBinary(jobId);
+        byte[] userRawId = MySqlGuidConverter.GuidToMySqlBinary(userId);
+
+        await dbContext.Database.ExecuteSqlRawAsync
+        (
+            "CALL SP_MARK_INTERESTED_JOB(@p0, @p1, @p2)",
+            parameters: [userRawId, jobRawId, like],
+            token
+        );
     }
 }

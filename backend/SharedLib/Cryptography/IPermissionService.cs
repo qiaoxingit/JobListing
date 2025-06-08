@@ -1,4 +1,5 @@
-﻿using SharedLib.Contracts.UserService;
+﻿using SharedLib.Contracts.JobService;
+using SharedLib.Contracts.UserService;
 
 namespace SharedLib.Cryptography;
 
@@ -21,4 +22,12 @@ public interface IPermissionService
     /// <param name="token">The token to be checked</param>
     /// <returns><c>true</c> if permission is satisfied; otherwise <c>false</c></returns>
     public bool DemandPermission(string? token);
+
+    /// <summary>
+    /// Check if the user from token has permission to operate the job
+    /// </summary>
+    /// <param name="token">The token to be checked</param>
+    /// <param name="job">The job to check</param>
+    /// <returns><c>true</c> if permission is satisfied; otherwise <c>false</c></returns>
+    public bool DemandPermission(string? token, Job job);
 }

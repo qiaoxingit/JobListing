@@ -84,7 +84,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
         return Ok(result);
     }
 
-    [HttpGet("UpdateJob")]
+    [HttpPost("UpdateJob")]
     public async ValueTask<IActionResult> UpdateJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromBody] Job job, [FromRoute] CancellationToken token)
     {
         if (!permissionService.DemandPermission(authToken, Role.Poster))
@@ -129,7 +129,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
         return Ok();
     }
 
-    [HttpGet("CreateJob")]
+    [HttpPost("CreateJob")]
     public async ValueTask<IActionResult> CreateJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromBody] Job job, [FromRoute] CancellationToken token)
     {
         if (!permissionService.DemandPermission(authToken, Role.Poster))
@@ -167,42 +167,61 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
         return Ok();
     }
 
-    [HttpGet("DeleteJob")]
-    public async ValueTask<IActionResult> DeleteJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromBody] Job job, [FromRoute] CancellationToken token)
+    [HttpDelete("DeleteJob")]
+    public async ValueTask<IActionResult> DeleteJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid jobId, [FromRoute] CancellationToken token)
     {
         if (!permissionService.DemandPermission(authToken, Role.Poster))
         {
             return Unauthorized();
         }
 
-        if (job is null)
-        {
-            return BadRequest("No job is provided.");
-        }
-
-        if (!job.Id.HasValue || job.Id == Guid.Empty)
+        if (jobId == Guid.Empty)
         {
             return BadRequest("No job id is provided.");
         }
 
-        var oldJob = await jobRepository.GetByIdAsync(job.Id.Value, token);
+        var oldJob = await jobRepository.GetByIdAsync(jobId, token);
 
         if (oldJob is null)
         {
-            return NotFound($"Job/{job.Id} doesn't exist.");
+            return NotFound($"Job/{jobId} doesn't exist.");
         }
 
-        if (oldJob.PostedByUser != job.PostedByUser)
+        if (!permissionService.DemandPermission(authToken, oldJob))
         {
-            return BadRequest("Deleting is not allowed");
+            return Unauthorized($"User doesn't has permission to delete Job/{jobId}");
         }
 
-        var rowsAffected = await jobRepository.DeleteJobAsync(job, token);
+        var rowsAffected = await jobRepository.DeleteJobAsync(jobId, token);
 
-        if (rowsAffected != 1)
+        if (rowsAffected < 1)
         {
             return Conflict($"There is {rowsAffected} rows updated, which is unexpected.");
         }
+
+        return Ok();
+    }
+
+    [HttpGet("MarkInterestedJob")]
+    public async ValueTask<IActionResult> MarkInterestedJobAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid userId, [FromQuery] Guid jobId, [FromRoute] CancellationToken token, [FromQuery] bool like = true)
+    {
+        if (!permissionService.DemandPermission(authToken, Role.Viewer))
+        {
+            return Unauthorized();
+        }
+
+        if (jobId == Guid.Empty)
+        {
+            return BadRequest("No job id is provided.");
+        }
+
+
+        if (userId == Guid.Empty)
+        {
+            return BadRequest("No user id is provided.");
+        }
+
+        await jobRepository.MarkInterestedJobAsync(userId, like, jobId, token);
 
         return Ok();
     }
