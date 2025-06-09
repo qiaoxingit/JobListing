@@ -17,9 +17,9 @@ public static class Bootstrap
     /// Configures dependency injection and manual AppSettings binding
     /// </summary>
     /// <param name="builder">The web application builder</param>
-    public static void Configure(WebApplicationBuilder builder, AppSettings? appSettings = null)
+    public static void Configure(WebApplicationBuilder builder)
     {
-        ConfigureAppSettings(builder, appSettings);
+        ConfigureAppSettings(builder);
 
         var assemblies = AppDomain.CurrentDomain
             .GetAssemblies()
@@ -32,6 +32,7 @@ public static class Bootstrap
         ConfigureCors(builder);
         ConfigureDependencyInjection(builder, assemblies, configuration);
         ConfigureDatabase(builder);
+        ConfigureHttpClients(builder);
     }
 
     private static void ConfigureCors(WebApplicationBuilder builder)
@@ -48,10 +49,10 @@ public static class Bootstrap
         });
     }
 
-    private static void ConfigureAppSettings(WebApplicationBuilder builder, AppSettings? appSettings)
+    private static void ConfigureAppSettings(WebApplicationBuilder builder)
     {
         var appSettingsJson = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"));
-        appSettings ??= JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
+        var appSettings = JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
         builder.Services.AddSingleton(typeof(AppSettings), appSettings!);
     }
 
@@ -98,5 +99,29 @@ public static class Bootstrap
                     new MySqlServerVersion(new Version(appSettings.DBCongfigration.MySqlVersion))
                 )
         );
+    }
+
+    private static void ConfigureHttpClients(WebApplicationBuilder builder)
+    {
+        var serviceProvider = builder.Services.BuildServiceProvider();
+
+        var appSettings = serviceProvider.GetService<AppSettings>();
+
+        if (appSettings?.HttpClients is null || !appSettings.HttpClients.Any())
+        {
+            return;
+        }
+
+        foreach (var httpClientConfig in appSettings.HttpClients)
+        {
+            builder.Services.AddHttpClient
+            (
+                httpClientConfig.Name,
+                config =>
+                {
+                    config.BaseAddress = new Uri($"{httpClientConfig.ServiceBaseUrl}");
+                }
+            );
+        }
     }
 }

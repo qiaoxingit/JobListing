@@ -23,6 +23,8 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
             return false;
         }
 
+        token = GetTokenNoScheme(token!);
+
         var claims = jwtProvider.GetClaims(token!);
 
         var expirationDateString = claims.FirstOrDefault(c => c.Type.EqualsIgnoreCase("ExpirationDate"))?.Value;
@@ -60,6 +62,8 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
             return false;
         }
 
+        token = GetTokenNoScheme(token!);
+
         var claims = jwtProvider.GetClaims(token!);
 
         var expirationDateString = claims.FirstOrDefault(c => c.Type.EqualsIgnoreCase("ExpirationDate"))?.Value;
@@ -85,6 +89,8 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
             return false;
         }
 
+        token = GetTokenNoScheme(token!);
+
         var claims = jwtProvider.GetClaims(token!);
 
         Console.WriteLine("Claims found:");
@@ -101,5 +107,12 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
         }
 
         return job.PostedByUser.HasValue && userId == job.PostedByUser.Value;
+    }
+
+    private string GetTokenNoScheme(string tokenWithScheme)
+    {
+        var tokens = tokenWithScheme.Split(' ');
+
+        return tokens.Length == 1 ? tokens[0] : tokens[1];
     }
 }

@@ -47,6 +47,12 @@ public class UserRepository(DatabaseContext dbContext, IEncryptProvider encryptP
         return users[0];
     }
 
+    /// <summary>
+    /// Insert a new user row into USER table if possible
+    /// </summary>
+    /// <param name="user">The new user to insert into</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
+    /// <returns>The number of rows affected</returns>
     public async ValueTask<int> RegisterAsync(User user, CancellationToken token)
     {
         var encryptedPassword = encryptProvider.Encrypt(user.Password!);
@@ -69,5 +75,31 @@ public class UserRepository(DatabaseContext dbContext, IEncryptProvider encryptP
         );
 
         return rowsAffected;
+    }
+
+    /// <summary>
+    /// Get a list of users who liked on the job
+    /// </summary>
+    /// <param name="jobId">The id of job which users liked</param>
+    /// <param name="token">A token to monitor for cancellation requests</param>
+    /// <returns>A list of users who liked on the job</returns>
+    public async ValueTask<IReadOnlyList<User>> GetLikedUsersAsync(Guid jobId, CancellationToken token)
+    {
+        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(jobId);
+
+        var users = await dbContext.Users.FromSqlInterpolated
+        (
+            $@"
+            SELECT u.*
+              FROM USER u
+             INNER JOIN INTERESTEDJOB i
+                ON u.ID = i.USER_ID
+             WHERE i.JOB_ID = {rawId}"
+        )
+        .ToListAsync(token);
+
+        users.ForEach(u => u.Password = string.Empty);
+
+        return users;
     }
 }
