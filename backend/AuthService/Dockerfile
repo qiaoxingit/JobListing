@@ -12,4 +12,4 @@ WORKDIR /app
 COPY --from=build /app/out .
 
 # Set the entrypoint
-ENTRYPOINT ["dotnet", "AuthService.dll"]
+CMD ["dotnet", "AuthService.dll"]

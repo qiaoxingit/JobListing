@@ -19,6 +19,8 @@ public static class Bootstrap
     /// <param name="builder">The web application builder</param>
     public static void Configure(WebApplicationBuilder builder)
     {
+        builder.Logging.AddConsole();
+
         ConfigureAppSettings(builder);
 
         var assemblies = AppDomain.CurrentDomain

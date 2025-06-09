@@ -52,7 +52,7 @@ public class AuthController(IJwtProvider jwtProvider, IHttpClientFactory httpCli
         }
 
         var authToken = jwtProvider.GenerateToken(user);
-        Response.Headers["Authorization"] = $"{authToken}";
+        Response.Headers["Authorization"] = $"Bearer {authToken}";
 
         var response = new AuthenticationResponse
         {

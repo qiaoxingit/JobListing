@@ -93,12 +93,6 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
 
         var claims = jwtProvider.GetClaims(token!);
 
-        Console.WriteLine("Claims found:");
-        foreach (var claim in claims)
-        {
-            Console.WriteLine($" - {claim.Type} = {claim.Value}");
-        }
-
         var userIdClaim = claims.FirstOrDefault(c => string.Equals(c.Type, ClaimTypes.NameIdentifier, StringComparison.OrdinalIgnoreCase));
 
         if (userIdClaim == null || !Guid.TryParse(userIdClaim.Value, out var userId))
@@ -111,7 +105,7 @@ public class PermissionService(IJwtProvider jwtProvider) : IPermissionService
 
     private string GetTokenNoScheme(string tokenWithScheme)
     {
-        var tokens = tokenWithScheme.Split(' ');
+        var tokens = tokenWithScheme.Split(" ");
 
         return tokens.Length == 1 ? tokens[0] : tokens[1];
     }
