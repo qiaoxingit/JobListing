@@ -32,6 +32,8 @@ export default function JobEditDialog({
     job ? job.description : ""
   );
 
+  const [message, setMessage] = useState("");
+
   const handlePost = async () => {
     try {
       await apiClient.post<Job>("/job/job/CreateJob", {
@@ -43,8 +45,8 @@ export default function JobEditDialog({
       setNewJobDescription("");
       onClose();
       onSuccess();
-    } catch (error) {
-      alert("Job creation failed: " + error);
+    } catch {
+      setMessage("Job creation failed. Please try again.");
     }
   };
 
@@ -59,8 +61,8 @@ export default function JobEditDialog({
       setNewJobDescription("");
       onClose();
       onSuccess();
-    } catch (error) {
-      alert("Job edit failed: " + error);
+    } catch {
+      setMessage("Job edit failed. Please try again.");
     }
   };
 
@@ -90,6 +92,8 @@ export default function JobEditDialog({
           value={newJobDescription}
           onChange={(e) => setNewJobDescription(e.target.value)}
         />
+
+        {message && <div className="text-red-500 text-sm mt-2">{message}</div>}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCancel}>Cancel</Button>
