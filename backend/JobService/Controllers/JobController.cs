@@ -17,11 +17,6 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
     [HttpGet("GetById")]
     public async ValueTask<IActionResult> GetByIdAsync([FromHeader(Name = "Authorization")] string? authToken, [FromQuery] Guid id, [FromRoute] CancellationToken token)
     {
-        if (!permissionService.DemandPermission(authToken))
-        {
-            return Unauthorized();
-        }
-
         if (id == Guid.Empty)
         {
             return BadRequest("No job id provided.");

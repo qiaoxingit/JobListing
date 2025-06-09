@@ -57,6 +57,10 @@ export default function JobsPage() {
   };
 
   const fetchInterestedJobs = async (userId: string | null): Promise<Job[]> => {
+    if (role != Role.Viewer) {
+      return [];
+    }
+
     const response = await apiClient.get<Job[]>(
       `/job/job/GetUserInteredJobs?userId=${userId}`
     );
