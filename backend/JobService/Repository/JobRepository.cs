@@ -68,12 +68,7 @@ public class JobRepository(DatabaseContext dbContext)
         )
         .ToListAsync(token);
 
-        if (jobs.IsNullOrEmpty())
-        {
-            return [];
-        }
-
-        return jobs!;
+        return jobs ?? [];
     }
 
     /// <summary>
@@ -124,7 +119,7 @@ public class JobRepository(DatabaseContext dbContext)
     /// <param name="take">the number of jobs to return from the result</param>
     /// <param name="token">A token to monitor for cancellation requests</param>
     /// <returns>A list of jobs</returns>
-    public async ValueTask<PagedResult<Job>> GetPaged(int skip, int take, CancellationToken token)
+    public async ValueTask<PagedResult<Job>> GetPagedAsync(int skip, int take, CancellationToken token)
     {
         var cutoffDate = DateTime.UtcNow.AddMonths(recentMonthThreshold);
 
@@ -163,7 +158,7 @@ public class JobRepository(DatabaseContext dbContext)
     /// <returns>The number of affected rows</returns>
     public async ValueTask<int> UpdateJobAsync(Job job, CancellationToken token)
     {
-        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id.Value);
+        byte[] rawId = MySqlGuidConverter.GuidToMySqlBinary(job.Id!.Value);
 
         var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync
         (

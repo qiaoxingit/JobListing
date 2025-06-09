@@ -45,7 +45,7 @@ public class JobController(JobRepository jobRepository, IPermissionService permi
             return Unauthorized();
         }
 
-        return Ok(await jobRepository.GetPaged(skip, take, token));
+        return Ok(await jobRepository.GetPagedAsync(skip, take, token));
     }
 
     [HttpGet("GetUserInteredJobs")]

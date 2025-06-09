@@ -1,6 +1,5 @@
 ﻿using Newtonsoft.Json;
 using SharedLib.Bootstrap;
-using SharedLib.Cryptography;
 using System.Composition;
 using System.Composition.Hosting;
 using System.Reflection;
