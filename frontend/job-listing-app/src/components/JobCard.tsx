@@ -1,15 +1,27 @@
-import { Delete, Edit, Favorite, FavoriteBorder } from "@mui/icons-material";
 import {
+  AccountCircle,
+  Delete,
+  Edit,
+  Favorite,
+  FavoriteBorder,
+} from "@mui/icons-material";
+import {
+  Avatar,
   Card,
   CardContent,
+  Divider,
   IconButton,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
   Tooltip,
   Typography,
 } from "@mui/material";
 import { useState, type JSX } from "react";
 import { apiClient } from "../api/ApiClient";
 import type { Job } from "../contracts/Job";
-import { Role } from "../contracts/User";
+import { Role, type User } from "../contracts/User";
 import JobEditDialog from "./JobEdit";
 
 export default function JobCard({
@@ -24,6 +36,7 @@ export default function JobCard({
   onUpdate: () => void;
 }>) {
   const [open, setOpen] = useState(false);
+  const [likedUsers, setLikedUsers] = useState<User[]>([]);
 
   const userId = localStorage.getItem("userId");
   const isMyJob = userId !== null && job.postedByUser === userId;
@@ -34,6 +47,14 @@ export default function JobCard({
       `/job/job/MarkInterestedJob?userId=${userId}&jobId=${job.id}&like=${liked}`
     );
     onUpdate();
+  };
+
+  const handleLikedUsers = async () => {
+    const response = await apiClient.get<User[]>(
+      `/user/user/GetLikedUsers?jobId=${job.id}`
+    );
+
+    setLikedUsers(response.data);
   };
 
   const handleEdit = () => {
@@ -59,6 +80,11 @@ export default function JobCard({
   } else if (role === Role.Poster && isMyJob) {
     actionButtons = (
       <>
+        <Tooltip title="Liked Users">
+          <IconButton onClick={handleLikedUsers} aria-label="view liked users">
+            <AccountCircle />
+          </IconButton>
+        </Tooltip>
         <Tooltip title="Edit">
           <IconButton onClick={handleEdit} aria-label="edit job">
             <Edit />
@@ -87,6 +113,25 @@ export default function JobCard({
             </div>
             <div className="flex gap-1">{actionButtons}</div>
           </div>
+
+          {likedUsers?.map((user: User) => (
+            <List key={user.id}>
+              <ListItem alignItems="flex-start">
+                <ListItemAvatar>
+                  <Avatar />
+                </ListItemAvatar>
+                <ListItemText
+                  primary={user.firstName + " " + user.lastName}
+                  secondary={
+                    <Typography component="span" variant="body2">
+                      {user.email}
+                    </Typography>
+                  }
+                />
+              </ListItem>
+              <Divider variant="inset" component="li" />
+            </List>
+          ))}
         </CardContent>
       </Card>
       <JobEditDialog
