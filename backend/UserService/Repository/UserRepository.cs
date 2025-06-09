@@ -55,10 +55,6 @@ public class UserRepository(DatabaseContext dbContext, IEncryptProvider encryptP
     /// <returns>The number of rows affected</returns>
     public async ValueTask<int> RegisterAsync(User user, CancellationToken token)
     {
-        if (user.Username == null || user.Password == null || user.FirstName == null || user.LastName == null || user.Email == null || user.Role == null)
-        {
-            return -1;
-        }
         var encryptedPassword = encryptProvider.Encrypt(user.Password!);
 
         var rowsAffected = await dbContext.Database.ExecuteSqlInterpolatedAsync

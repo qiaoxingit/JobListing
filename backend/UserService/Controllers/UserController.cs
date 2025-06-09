@@ -55,6 +55,10 @@ public class UserController
     [HttpPost("Register")]
     public async ValueTask<IActionResult> RegisterAsync([FromBody] User user, [FromRoute] CancellationToken token)
     {
+        if (user.Username == null || user.Password == null || user.FirstName == null || user.LastName == null || user.Email == null || user.Role == null)
+        {
+            return BadRequest();
+        }
         var rowAffected = await userRepository.RegisterAsync(user, token);
 
         if (rowAffected != 1)
