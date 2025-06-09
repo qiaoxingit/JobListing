@@ -17,9 +17,11 @@ public static class Bootstrap
     /// Configures dependency injection and manual AppSettings binding
     /// </summary>
     /// <param name="builder">The web application builder</param>
-    public static void Configure(WebApplicationBuilder builder, AppSettings? appSettings = null)
+    public static void Configure(WebApplicationBuilder builder)
     {
-        ConfigureAppSettings(builder, appSettings);
+        builder.Logging.AddConsole();
+
+        ConfigureAppSettings(builder);
 
         var assemblies = AppDomain.CurrentDomain
             .GetAssemblies()
@@ -48,10 +50,10 @@ public static class Bootstrap
         });
     }
 
-    private static void ConfigureAppSettings(WebApplicationBuilder builder, AppSettings? appSettings)
+    private static void ConfigureAppSettings(WebApplicationBuilder builder)
     {
         var appSettingsJson = File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "appsettings.json"));
-        appSettings ??= JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
+        var appSettings = JsonConvert.DeserializeObject<AppSettings>(appSettingsJson);
         builder.Services.AddSingleton(typeof(AppSettings), appSettings!);
     }
 

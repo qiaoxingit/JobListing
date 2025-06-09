@@ -12,4 +12,4 @@ WORKDIR /app
 COPY --from=build /app/out .
 
 # Set the entrypoint
-ENTRYPOINT ["dotnet", "JobService.dll"]
+CMD ["dotnet", "JobService.dll"]
